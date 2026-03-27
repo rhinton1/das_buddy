@@ -139,12 +139,25 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: #f6f8fa;
-  border: 1px solid #d0d7de;
+  background: #0969da;
+  border: 1px solid #0969da;
   cursor: pointer;
-  color: #57606a;
+  color: #ffffff;
+  transition: background 0.15s, border-color 0.15s;
 }
-.send-btn:hover { background: #eef1f4; }
+.send-btn:hover:not(:disabled) { background: #0757ba; border-color: #0757ba; }
+.send-btn:disabled {
+  background: #f6f8fa;
+  border-color: #d0d7de;
+  color: #57606a;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spin { animation: spin 0.8s linear infinite; }
 
 /* ── Quick-action pills ─────────────────────────────────────── */
 .quick-actions {
@@ -196,3 +209,161 @@
   text-align: center;
   background: #f6f8fa;
 }
+
+/* ── Message list ────────────────────────────────────────────── */
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message {
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #f6f8fa;
+  text-align: left;
+}
+
+.message--user {
+  background: #ffffff;
+  border-color: #d0d7de;
+}
+
+.message--assistant {
+  background: #f6f8fa;
+  border-color: #d0d7de;
+}
+
+.message-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #57606a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.message--user .message-label  { color: #0550ae; }
+.message--assistant .message-label { color: #1a7f37; }
+
+.message-content {
+  margin: 0;
+  font-size: 13px;
+  color: #1f2328;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-content--thinking {
+  color: #57606a;
+  font-style: italic;
+}
+
+/* ── Theme toggle button ─────────────────────────────────────── */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 6px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background: #f6f8fa;
+  color: #57606a;
+  cursor: pointer;
+}
+.theme-toggle:hover { background: #eef1f4; }
+
+/* ── Dark mode ───────────────────────────────────────────────── */
+.copilot-page.dark {
+  background: #0d1117;
+  color: #e6edf3;
+}
+
+.copilot-page.dark .topbar {
+  border-bottom-color: #30363d;
+}
+
+.copilot-page.dark .cli-btn,
+.copilot-page.dark .theme-toggle {
+  background: #21262d;
+  border-color: #30363d;
+  color: #8b949e;
+}
+.copilot-page.dark .cli-btn:hover,
+.copilot-page.dark .theme-toggle:hover { background: #30363d; }
+
+.copilot-page.dark .ask-container {
+  background: #161b22;
+  border-color: #30363d;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.copilot-page.dark .ask-input {
+  background: transparent;
+  color: #8b949e;
+}
+.copilot-page.dark .ask-input::placeholder { color: #484f58; }
+
+.copilot-page.dark .ask-toolbar {
+  border-top-color: #21262d;
+}
+
+.copilot-page.dark .toolbar-btn,
+.copilot-page.dark .toolbar-btn-icon {
+  background: #21262d;
+  border-color: #30363d;
+  color: #8b949e;
+}
+.copilot-page.dark .toolbar-btn:hover,
+.copilot-page.dark .toolbar-btn-icon:hover { background: #30363d; border-color: #484f58; }
+
+.copilot-page.dark .model-label { color: #58a6ff; }
+.copilot-page.dark .model-label:hover { background: #1f3a5f; }
+
+.copilot-page.dark .send-btn {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #ffffff;
+}
+.copilot-page.dark .send-btn:hover:not(:disabled) { background: #388bfd; border-color: #388bfd; }
+.copilot-page.dark .send-btn:disabled {
+  background: #21262d;
+  border-color: #30363d;
+  color: #8b949e;
+}
+
+.copilot-page.dark .action-btn {
+  background: #161b22;
+  border-color: #30363d;
+  color: #8b949e;
+}
+.copilot-page.dark .action-btn:hover { background: #21262d; border-color: #484f58; }
+
+.copilot-page.dark .sessions-title { color: #e6edf3; }
+
+.copilot-page.dark .sessions-empty {
+  background: #161b22;
+  border-color: #30363d;
+  color: #8b949e;
+}
+
+.copilot-page.dark .message {
+  border-color: #30363d;
+}
+.copilot-page.dark .message--user {
+  background: #161b22;
+}
+.copilot-page.dark .message--assistant {
+  background: #0d1117;
+}
+.copilot-page.dark .message-label { color: #8b949e; }
+.copilot-page.dark .message--user .message-label { color: #58a6ff; }
+.copilot-page.dark .message--assistant .message-label { color: #3fb950; }
+.copilot-page.dark .message-content { color: #e6edf3; }
+.copilot-page.dark .message-content--thinking { color: #8b949e; }
+
