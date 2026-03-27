@@ -1,0 +1,21 @@
+Mcp-config.json
+ajGaXaFDHb5BYF7SJ2fUKq0jfUimD0Pkg4Irnt_______________________________________________________________________________________________________
+{
+  "mcpServers": {
+    "jira": {
+      "command": "python",
+      "args": ["jira_mcp_server.py"],
+      "env": {
+        "JIRA_URL": https://your-domain.atlassian.net,
+        "JIRA_EMAIL": your-email@example.com,
+        "JIRA_API_TOKEN": "your-api-token"
+      }
+    }
+  }
+}
+
+https://jira.devops.va.gov/rest/api/2/issue
+dasdevopsteam@va.gov
+Requirements.txt
+mcp>=0.9.0
+jira>=3.5.0
