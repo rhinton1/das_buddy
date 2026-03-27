@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Terminal, MessageSquare, ChevronDown, Plus,
   ArrowRight, GitBranch, GitPullRequest, RefreshCw,
-  CircleDashed, Layers,
+  CircleDashed, Layers, Sun, Moon,
 } from 'lucide-react';
 import './App.css';
 
@@ -15,11 +15,62 @@ const CopilotLogo = () => (
 
 export default function CopilotInterface() {
   const [input, setInput] = useState('');
+  const [isDark, setIsDark] = useState(false);
+  const [messages, setMessages] = useState([]);   // {role:'user'|'assistant', content:string}
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  // Scroll to bottom whenever messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendMessage = async () => {
+    const text = input.trim();
+    if (!text || isLoading) return;
+
+    const userMsg = { role: 'user', content: text };
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: messages }),
+      });
+      const data = await res.json();
+      setMessages([...nextMessages, {
+        role: 'assistant',
+        content: data.error ? `Error: ${data.error}` : data.response,
+      }]);
+    } catch (err) {
+      setMessages([...nextMessages, {
+        role: 'assistant',
+        content: `Connection error: ${err.message}`,
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    // Ctrl+Enter or Cmd+Enter to send
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
   return (
-    <div className="copilot-page">
+    <div className={`copilot-page${isDark ? ' dark' : ''}`}>
       {/* Top bar */}
       <header className="topbar">
+        <button className="theme-toggle" onClick={() => setIsDark(d => !d)} title={isDark ? 'Switch to light' : 'Switch to dark'}>
+          {isDark ? <Sun size={14} /> : <Moon size={14} />}
+        </button>
         <button className="cli-btn">
           <Terminal size={13} />
           CLI
@@ -29,10 +80,12 @@ export default function CopilotInterface() {
       {/* Main content */}
       <main className="main-content">
 
-        {/* Logo */}
-        <div className="copilot-logo">
-          <CopilotLogo />
-        </div>
+        {/* Logo — hide once conversation starts */}
+        {messages.length === 0 && (
+          <div className="copilot-logo">
+            <CopilotLogo />
+          </div>
+        )}
 
         {/* Ask box */}
         <div className="ask-container">
@@ -42,6 +95,7 @@ export default function CopilotInterface() {
             rows={2}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
           <div className="ask-toolbar">
             <div className="toolbar-left">
@@ -64,8 +118,15 @@ export default function CopilotInterface() {
                 GPT-5.2
                 <ChevronDown size={11} />
               </span>
-              <button className="send-btn">
-                <ArrowRight size={14} />
+              <button
+                className={`send-btn${isLoading ? ' send-btn--loading' : ''}`}
+                onClick={sendMessage}
+                disabled={isLoading || !input.trim()}
+                title="Send (Ctrl+Enter)"
+              >
+                {isLoading
+                  ? <RefreshCw size={14} className="spin" />
+                  : <ArrowRight size={14} />}
               </button>
             </div>
           </div>
@@ -73,32 +134,39 @@ export default function CopilotInterface() {
 
         {/* Quick-action pills */}
         <div className="quick-actions">
-          <button className="action-btn">
-            <RefreshCw size={13} />
-            Agent
-          </button>
-          <button className="action-btn">
-            <CircleDashed size={13} />
-            Create issue
-          </button>
-          <button className="action-btn">
-            <GitBranch size={13} />
-            Git
-            <ChevronDown size={11} />
-          </button>
-          <button className="action-btn">
-            <GitPullRequest size={13} />
-            Pull requests
-            <ChevronDown size={11} />
-          </button>
+          <button className="action-btn"><RefreshCw size={13} />Agent</button>
+          <button className="action-btn"><CircleDashed size={13} />Create issue</button>
+          <button className="action-btn"><GitBranch size={13} />Git<ChevronDown size={11} /></button>
+          <button className="action-btn"><GitPullRequest size={13} />Pull requests<ChevronDown size={11} /></button>
         </div>
 
-        {/* Recent sessions */}
+        {/* Messages / Recent sessions */}
         <div className="sessions-section">
           <p className="sessions-title">Recent agent sessions</p>
-          <div className="sessions-empty">
-            No sessions found. Create one by sending a prompt above.
-          </div>
+
+          {messages.length === 0 ? (
+            <div className="sessions-empty">
+              No sessions found. Create one by sending a prompt above.
+            </div>
+          ) : (
+            <div className="messages-list">
+              {messages.map((msg, i) => (
+                <div key={i} className={`message message--${msg.role}`}>
+                  <span className="message-label">
+                    {msg.role === 'user' ? 'You' : 'das_buddy'}
+                  </span>
+                  <p className="message-content">{msg.content}</p>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="message message--assistant">
+                  <span className="message-label">das_buddy</span>
+                  <p className="message-content message-content--thinking">Thinking…</p>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
 
       </main>
