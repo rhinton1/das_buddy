@@ -15,7 +15,52 @@
   align-items: center;
   padding: 6px 16px;
   border-bottom: 1px solid #d0d7de;
+  gap: 6px;
 }
+
+/* ── Container status indicators ────────────────────────────── */
+.container-indicators {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto; /* push to the left */
+}
+
+.container-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid #d0d7de;
+  background: #f6f8fa;
+  color: #57606a;
+  cursor: default;
+  user-select: none;
+}
+
+.indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d0d7de;
+  flex-shrink: 0;
+}
+
+.indicator--up   .indicator-dot { background: #1a7f37; box-shadow: 0 0 0 2px #d1f0da; }
+.indicator--down .indicator-dot { background: #cf222e; box-shadow: 0 0 0 2px #ffdce0; }
+.indicator--unknown .indicator-dot { background: #d0d7de; }
+
+/* dark mode */
+.copilot-page.dark .container-indicator {
+  background: #21262d;
+  border-color: #30363d;
+  color: #8b949e;
+}
+.copilot-page.dark .indicator--up   .indicator-dot { background: #3fb950; box-shadow: 0 0 0 2px #1b3a24; }
+.copilot-page.dark .indicator--down .indicator-dot { background: #f85149; box-shadow: 0 0 0 2px #3a1b1b; }
 
 .cli-btn {
   display: inline-flex;
@@ -46,6 +91,19 @@
 .copilot-logo {
   margin-bottom: 28px;
   color: #57606a;
+}
+
+.copilot-logo-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+  /* invert in dark mode via sibling rule below */
+}
+
+.copilot-page.dark .copilot-logo-img {
+  filter: invert(1) brightness(1.8);
 }
 
 /* ── Ask box ────────────────────────────────────────────────── */
@@ -366,4 +424,156 @@
 .copilot-page.dark .message--assistant .message-label { color: #3fb950; }
 .copilot-page.dark .message-content { color: #e6edf3; }
 .copilot-page.dark .message-content--thinking { color: #8b949e; }
+
+/* ── Settings modal ─────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(31, 35, 40, 0.18);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #d0d7de;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2328;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #57606a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.modal-close:hover { background: #f6f8fa; color: #1f2328; }
+
+.modal-desc {
+  padding: 10px 16px 4px;
+  font-size: 12px;
+  color: #57606a;
+  margin: 0;
+}
+.modal-desc code {
+  font-size: 11px;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: #1f2328;
+}
+
+.modal-editor {
+  flex: 1;
+  margin: 8px 16px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #1f2328;
+  background: #f6f8fa;
+  resize: none;
+  outline: none;
+  overflow-y: auto;
+  min-height: 220px;
+}
+.modal-editor:focus { border-color: #0969da; background: #ffffff; }
+
+.modal-status {
+  margin: 0 16px 4px;
+  font-size: 12px;
+}
+.modal-status--ok  { color: #1a7f37; }
+.modal-status--err { color: #cf222e; }
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid #d0d7de;
+}
+
+.modal-btn {
+  padding: 5px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.modal-btn--cancel {
+  background: #f6f8fa;
+  border-color: #d0d7de;
+  color: #1f2328;
+}
+.modal-btn--cancel:hover { background: #eef1f4; }
+.modal-btn--save {
+  background: #0969da;
+  border-color: #0969da;
+  color: #ffffff;
+}
+.modal-btn--save:hover:not(:disabled) { background: #0757ba; }
+.modal-btn--save:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* dark mode */
+.copilot-page.dark .modal {
+  background: #161b22;
+  border-color: #30363d;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.copilot-page.dark .modal-header  { border-bottom-color: #30363d; }
+.copilot-page.dark .modal-title   { color: #e6edf3; }
+.copilot-page.dark .modal-close   { color: #8b949e; }
+.copilot-page.dark .modal-close:hover { background: #21262d; color: #e6edf3; }
+.copilot-page.dark .modal-desc    { color: #8b949e; }
+.copilot-page.dark .modal-desc code {
+  background: #21262d;
+  border-color: #30363d;
+  color: #e6edf3;
+}
+.copilot-page.dark .modal-editor {
+  background: #0d1117;
+  border-color: #30363d;
+  color: #e6edf3;
+}
+.copilot-page.dark .modal-editor:focus { border-color: #1f6feb; background: #0d1117; }
+.copilot-page.dark .modal-footer  { border-top-color: #30363d; }
+.copilot-page.dark .modal-btn--cancel {
+  background: #21262d;
+  border-color: #30363d;
+  color: #e6edf3;
+}
+.copilot-page.dark .modal-btn--cancel:hover { background: #30363d; }
 
