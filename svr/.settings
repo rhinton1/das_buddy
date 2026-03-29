@@ -1,0 +1,21 @@
+# ─────────────────────────────────────────────────────────────
+#  das_buddy — environment variables
+#  Edit values here. Changes are picked up immediately via
+#  the Settings (⚙) panel in the app — no restart required.
+# ─────────────────────────────────────────────────────────────
+
+# ── OpenAI ───────────────────────────────────────────────────
+# API key for chat completions (gpt-4o-mini)
+# https://platform.openai.com/api-keys
+OPENAI_API_KEY=
+
+# ── Jira ─────────────────────────────────────────────────────
+# Base URL of your Atlassian Jira instance
+JIRA_URL=
+
+# Email address associated with your Atlassian account
+JIRA_EMAIL=
+
+# Jira API token (not your password)
+# Generate at: https://id.atlassian.com/manage-profile/security/api-tokens
+JIRA_API_TOKEN=

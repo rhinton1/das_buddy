@@ -445,20 +445,56 @@ async def handle_call_tool(
         ]
 
 async def main():
-    """Run the MCP server"""
-    async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
-        await mcpSvr.run(
-            read_stream,
-            write_stream,
-            InitializationOptions(
-                server_name="jira-mcp-server",
-                server_version="0.1.0",
-                capabilities=mcpSvr.get_capabilities(
-                    notification_options=NotificationOptions(),
-                    experimental_capabilities={},
+    """Run the MCP server — stdio locally, SSE inside Docker container"""
+    transport = os.getenv("TRANSPORT", "stdio")
+
+    if transport == "sse":
+        from mcp.server.sse import SseServerTransport
+        from starlette.applications import Starlette
+        from starlette.routing import Route, Mount
+        import uvicorn
+
+        port = int(os.getenv("PORT", "8001"))
+        sse = SseServerTransport("/messages/")
+
+        async def handle_sse(request):
+            async with sse.connect_sse(
+                request.scope, request.receive, request._send
+            ) as streams:
+                await mcpSvr.run(
+                    streams[0], streams[1],
+                    InitializationOptions(
+                        server_name="jira-mcp-server",
+                        server_version="0.1.0",
+                        capabilities=mcpSvr.get_capabilities(
+                            notification_options=NotificationOptions(),
+                            experimental_capabilities={},
+                        ),
+                    ),
+                )
+
+        starlette_app = Starlette(routes=[
+            Route("/sse", endpoint=handle_sse),
+            Mount("/messages/", app=sse.handle_post_message),
+        ])
+        config = uvicorn.Config(starlette_app, host="0.0.0.0", port=port, log_level="info")
+        server = uvicorn.Server(config)
+        await server.serve()
+
+    else:
+        async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
+            await mcpSvr.run(
+                read_stream,
+                write_stream,
+                InitializationOptions(
+                    server_name="jira-mcp-server",
+                    server_version="0.1.0",
+                    capabilities=mcpSvr.get_capabilities(
+                        notification_options=NotificationOptions(),
+                        experimental_capabilities={},
+                    ),
                 ),
-            ),
-        )
+            )
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,0 +1,10 @@
+flask
+flask-cors
+openai
+python-dotenv
+mcp
+jira
+httpx
+starlette
+uvicorn
+

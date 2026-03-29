@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Terminal, MessageSquare, ChevronDown, Plus,
   ArrowRight, GitBranch, GitPullRequest, RefreshCw,
-  CircleDashed, Layers, Sun, Moon,
+  CircleDashed, Layers, Sun, Moon, Settings,
 } from 'lucide-react';
 import './App.css';
 
@@ -16,9 +16,65 @@ const CopilotLogo = () => (
 export default function CopilotInterface() {
   const [input, setInput] = useState('');
   const [isDark, setIsDark] = useState(false);
-  const [messages, setMessages] = useState([]);   // {role:'user'|'assistant', content:string}
+  const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // Settings modal
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsContent, setSettingsContent] = useState('');
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsStatus, setSettingsStatus] = useState(null);
+
+  // Container status: { 'jira-svr': bool, 'post-svr': bool }
+  const [containerStatus, setContainerStatus] = useState({});
+
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/containers/status');
+        if (res.ok) setContainerStatus(await res.json());
+      } catch { /* backend not up yet */ }
+    };
+    poll();
+    const id = setInterval(poll, 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  const openSettings = async () => {
+    setSettingsStatus(null);
+    setSettingsContent('');
+    setSettingsOpen(true);          // open immediately so the user sees feedback
+    try {
+      const res = await fetch('/api/settings');
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setSettingsContent(data.content ?? '');
+    } catch (err) {
+      setSettingsStatus('fetch-error');
+      setSettingsContent(`# Could not load settings — is the Flask API running?\n# Error: ${err.message}`);
+    }
+  };
+
+  const saveSettings = async () => {
+    setSettingsSaving(true);
+    setSettingsStatus(null);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: settingsContent }),
+      });
+      const data = await res.json();
+      setSettingsStatus(data.error ? 'error' : 'saved');
+      if (!data.error) setTimeout(() => setSettingsOpen(false), 800);
+    } catch {
+      setSettingsStatus('error');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
 
   // Scroll to bottom whenever messages update
   useEffect(() => {
@@ -68,6 +124,30 @@ export default function CopilotInterface() {
     <div className={`copilot-page${isDark ? ' dark' : ''}`}>
       {/* Top bar */}
       <header className="topbar">
+        {/* Container status indicators */}
+        <div className="container-indicators">
+          {[
+            { key: 'jira-svr', label: 'Jira' },
+            { key: 'post-svr', label: 'Post' },
+          ].map(({ key, label }) => {
+            const running = containerStatus[key];
+            const statusClass = running === true
+              ? 'indicator--up'
+              : running === false
+                ? 'indicator--down'
+                : 'indicator--unknown';
+            return (
+              <span key={key} className={`container-indicator ${statusClass}`} title={`${key}: ${running === true ? 'running' : running === false ? 'stopped' : 'unknown'}`}>
+                <span className="indicator-dot" />
+                {label}
+              </span>
+            );
+          })}
+        </div>
+
+        <button className="theme-toggle" onClick={openSettings} title="Settings">
+          <Settings size={14} />
+        </button>
         <button className="theme-toggle" onClick={() => setIsDark(d => !d)} title={isDark ? 'Switch to light' : 'Switch to dark'}>
           {isDark ? <Sun size={14} /> : <Moon size={14} />}
         </button>
@@ -170,6 +250,45 @@ export default function CopilotInterface() {
         </div>
 
       </main>
+
+      {/* Settings modal */}
+      {settingsOpen && (
+        <div className="modal-overlay" onClick={() => setSettingsOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title"><Settings size={14} /> Settings</span>
+              <button className="modal-close" onClick={() => setSettingsOpen(false)}>✕</button>
+            </div>
+            <p className="modal-desc">
+              Edit environment variables for <code>svr/.settings</code>. One <code>KEY=value</code> per line.
+            </p>
+            <textarea
+              className="modal-editor"
+              value={settingsContent}
+              onChange={(e) => setSettingsContent(e.target.value)}
+              spellCheck={false}
+            />
+            {settingsStatus === 'saved' && (
+              <p className="modal-status modal-status--ok">✓ Saved successfully</p>
+            )}
+            {settingsStatus === 'error' && (
+              <p className="modal-status modal-status--err">✗ Failed to save</p>
+            )}
+            {settingsStatus === 'fetch-error' && (
+              <p className="modal-status modal-status--err">⚠ Could not reach the API — start the Flask server (<code>python svr/api.py</code>)</p>
+            )}
+            <div className="modal-footer">
+              <button className="modal-btn modal-btn--cancel" onClick={() => setSettingsOpen(false)}>
+                Cancel
+              </button>
+              <button className="modal-btn modal-btn--save" onClick={saveSettings} disabled={settingsSaving}>
+                {settingsSaving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
