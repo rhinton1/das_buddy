@@ -7,4 +7,5 @@ jira
 httpx
 starlette
 uvicorn
+pyinstaller
 

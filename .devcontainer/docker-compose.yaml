@@ -1,0 +1,29 @@
+services:
+  jira-svr:
+    build:
+      context: ../svr/jira    # Dockerfile lives here; copies jiraSvr.py from same dir
+      dockerfile: Dockerfile
+    container_name: das_buddy-jira-svr
+    environment:
+      TRANSPORT: sse
+      PORT: "8001"
+      # Passed in from Codespace secrets / host env
+      JIRA_URL: ${JIRA_URL:-}
+      JIRA_EMAIL: ${JIRA_EMAIL:-}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN:-}
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+
+  post-svr:
+    build:
+      context: ../svr/postman  # Dockerfile lives here; copies postSvr.py from same dir
+      dockerfile: Dockerfile
+    container_name: das_buddy-post-svr
+    environment:
+      TRANSPORT: sse
+      PORT: "8002"
+    ports:
+      - "8002:8002"
+    restart: unless-stopped
+

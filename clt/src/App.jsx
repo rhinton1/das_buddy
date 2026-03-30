@@ -28,12 +28,21 @@ export default function CopilotInterface() {
 
   // Container status: { 'jira-svr': bool, 'post-svr': bool }
   const [containerStatus, setContainerStatus] = useState({});
+  // Codespace lifecycle state
+  const [codespaceState, setCodespaceState] = useState('idle');
 
   useEffect(() => {
     const poll = async () => {
       try {
         const res = await fetch('/api/containers/status');
         if (res.ok) setContainerStatus(await res.json());
+      } catch { /* backend not up yet */ }
+      try {
+        const cs = await fetch('/api/codespace/status');
+        if (cs.ok) {
+          const data = await cs.json();
+          setCodespaceState(data.state ?? 'idle');
+        }
       } catch { /* backend not up yet */ }
     };
     poll();
@@ -126,6 +135,22 @@ export default function CopilotInterface() {
       <header className="topbar">
         {/* Container status indicators */}
         <div className="container-indicators">
+          {/* Codespace badge — only shown when CODESPACE_REPO is set */}
+          {codespaceState !== 'idle' && (
+            <span
+              className={`container-indicator ${
+                codespaceState === 'ready'    ? 'indicator--up' :
+                codespaceState.startsWith('error') ? 'indicator--down' :
+                'indicator--unknown'
+              }`}
+              title={`Codespace: ${codespaceState}`}
+            >
+              <span className="indicator-dot" />
+              {codespaceState === 'ready'    ? 'Codespace' :
+               codespaceState === 'creating' ? 'Starting…' :
+               'CS Error'}
+            </span>
+          )}
           {[
             { key: 'jira-svr', label: 'Jira' },
             { key: 'post-svr', label: 'Post' },

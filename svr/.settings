@@ -4,12 +4,28 @@
 #  the Settings (⚙) panel in the app — no restart required.
 # ─────────────────────────────────────────────────────────────
 
-# ── OpenAI ───────────────────────────────────────────────────
-# API key for chat completions (gpt-4o-mini)
-# https://platform.openai.com/api-keys
-OPENAI_API_KEY=
+# ── GitHub Copilot ────────────────────────────────────────────
+# Must be a GitHub.com classic PAT (not fine-grained, not a GHES PAT).
+# Generate at: https://github.com/settings/tokens → classic token
+GITHUB_TOKEN=
 
-# ── Jira ─────────────────────────────────────────────────────
+# Model to use (default: gpt-4o). Options: gpt-4o-mini, claude-3.5-sonnet
+COPILOT_MODEL=gpt-4o
+
+# ── Codespace ────────────────────────────────────────────────
+# The app automatically creates a GitHub Codespace on startup and
+# deletes it when you close the app.
+#
+# Set this to the owner/repo that contains the .devcontainer config.
+# Example: myorg/das_buddy
+CODESPACE_REPO=
+
+# These are set automatically once the Codespace is ready.
+# You can also set them manually to point at an already-running Codespace.
+JIRA_SVR_URL=
+POST_SVR_URL=
+
+# ── Jira credentials ──────────────────────────────────────────
 # Base URL of your Atlassian Jira instance
 JIRA_URL=
 
